@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="styles.css">
+    <title>Chat's</title>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Chat's</h1>
+
+        <form id="form" >
+            <input type="text" class="username" placeholder="nome de usuario">
+            <div class="chat"></div>
+            <input type="text" class="inputMessage" placeholder="Digite sua mensagem">
+            <button type="submit" class="submit">Enviar</button>
+        </form>
+
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3000')
+        socket.on('connect', () => {
+            console.log('conected' + socket.id)
+        } )
+
+        const btnSubmit = document.querySelector('.submit')
+        const chat = document.querySelector('.chat')
+
+        
+       
+        const showMessage = (message) => {
+            const div = document.createElement('div')
+            const p = document.createElement('p')
+            const strong = document.createElement('strong')
+            const strong1Text = document.createTextNode(message.author + ': ')
+            const pText = document.createTextNode(message.message)
+
+            p.classList.add('pMessage')
+            div.classList.add('message')
+            strong.classList.add('author')
+
+
+            strong.appendChild(strong1Text)
+            p.appendChild(pText)
+            div.append(strong, p)
+
+            chat.append(div)
+            console.log(strong1Text)
+        }
+
+        btnSubmit.addEventListener('click', (e => {
+            e.preventDefault()
+
+            const username = document.querySelector('.username').value
+            const message = document.querySelector('.inputMessage').value
+
+            if(!username && !message) {
+                return
+            }
+
+            const messageToSent = {
+                author: username,
+                message: message
+            }
+
+            showMessage(messageToSent)
+            socket.emit('sendMessage', messageToSent)
+        }))
+
+        socket.on('receivedMessage', (message) => {
+            showMessage(message)
+        })
+
+        socket.on('previousMessage', messages => {
+            for(let message of messages) {
+                showMessage(message)
+            }
+        })
+
+
+    </script>
+    
+</body>
+</html>
